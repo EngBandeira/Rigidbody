@@ -1,4 +1,5 @@
 #include "render.hpp"
+#include "camera.cpp"
 
 MyWindow::  MyWindow(void(*callback_fun)(MyWindow*), void(*key_callback)(GLFWwindow*,int,int,int,int)){
     if (!glfwInit ())

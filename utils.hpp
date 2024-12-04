@@ -53,6 +53,29 @@ class vec
     }
 };
 
+template <std::size_t x, std::size_t y> class matrix
+{
+  public:
+    std::array<float, x * y> data;
+    float &
+    operator[] (std::size_t x_, std::size_t y_)
+    {
+        // static_assert (x_ = < x and y_ = < y);
+        return data[x * x_ + y_];
+    }
+    float &
+    operator[] (std::size_t x_)
+    {
+        // static_assert (x_ = < x *y);
+        return data[x_];
+    }
+    matrix<x, y> operator* (matrix<x, y> a);
+    matrix () {}
+    matrix (std::array<float, x * y> data_) { data = data_; }
+};
+
+typedef matrix<4, 4> m4;
+
 
 
 class particle

@@ -1,3 +1,6 @@
+#include "camera.hpp"
+#include "render.hpp"
+#include "utils.hpp"
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <algorithm>
@@ -6,19 +9,17 @@
 #include <random>
 #include <vector>
 
-#include "render.hpp"
-#include "utils.hpp"
+#define NUMBEROFPARTICLE 2
 
-#define NUMBEROFPARTICLE 20
+camera2D camera;
 
-const int SPACEX = 500;
-const int SPACEY = 500;
+ int SPACEX = 500;
+ int SPACEY = 500;
 const float c = 0.2;
 const int d = 10;
 const float dt = 0.1;
+
 particle particles[NUMBEROFPARTICLE];
-float kkk = 1;
-vec camPosition;
 
 std::ostream &
 operator<< (std::ostream &os, const vec &vec)
@@ -32,13 +33,13 @@ generateParticles ()
 {
     std::random_device rd;
     std::mt19937 mt1 (rd ());
-    std::normal_distribution<> dist_x (SPACEX / 2.0, SPACEX / 8.0);
-    std::normal_distribution<> dist_y (SPACEY / 2.0, SPACEY / 8.0);
+    std::normal_distribution<> dist_x (SPACEX / 2.0f, SPACEX / 8.0f);
+    std::normal_distribution<> dist_y (SPACEY / 2.0f, SPACEY / 8.0f);
     for (int i = 0; i < NUMBEROFPARTICLE; i++)
         {
             particles[i].position
-                = vec (std::clamp (dist_x (mt1), 0.0, (double)SPACEX),
-                       std::clamp (dist_y (mt1), 0.0, (double)SPACEY));
+                = vec (std::clamp ((float)dist_x (mt1), 0.0f, (float)SPACEX),
+                       std::clamp ((float)dist_y (mt1), 0.0f, (float)SPACEY));
             particles[i].mass = 1;
             particles[i].velocity = vec (0, 0);
         }
@@ -50,12 +51,10 @@ renderParticles ()
     for (int i = 0; i < NUMBEROFPARTICLE; i++)
         {
             glBegin (GL_LINE_LOOP);
+            vec p = particles[i].position;
+            p = p - camera.position;
 
-            vec p = particles[i].position*kkk;
-            p = p - camPosition;
-            p = vec ((2 * p.x - SPACEX) / SPACEX, (2 * p.y - SPACEY) / SPACEY)
-                * kkk;
-            std::cout << p << '\n';
+            p = vec ((2 * p.x - SPACEX) / SPACEX, (2 * p.y - SPACEY) / SPACEY);
             glVertex2f (p.x + c, p.y + c);
             glVertex2f (p.x + c, p.y - c);
             glVertex2f (p.x - c, p.y - c);
@@ -73,37 +72,36 @@ atualizar (MyWindow *a)
 void
 keyCallback (GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    float abbb = 0.1;
     if (key == GLFW_KEY_W && action == GLFW_PRESS)
         {
-            camPosition = camPosition + vec (0, d);
+            camera.position = camera.position + vec (0, d);
         }
     else if (key == GLFW_KEY_S && action == GLFW_PRESS)
         {
-            camPosition = camPosition + vec (0, -d);
+            camera.position = camera.position + vec (0, -d);
         }
     else if (key == GLFW_KEY_D && action == GLFW_PRESS)
         {
-            camPosition = camPosition + vec (d, 0);
+            camera.position = camera.position + vec (d, 0);
         }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS)
         {
-            camPosition = camPosition + vec (-d, 0);
+            camera.position = camera.position + vec (-d, 0);
         }
     else if (key == GLFW_KEY_UP && action == GLFW_PRESS)
         {
-                        kkk-= abbb ;
-
+            SPACEX += 100;
         }
     else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
         {
-            kkk+= abbb ;
+            SPACEY += 100;
         }
 }
 int
 main ()
 {
-    camPosition = vec (0, 0);
+    camera.position = vec (0, 0);
+
     generateParticles ();
     MyWindow w = MyWindow (&atualizar, &keyCallback);
     return 0;
